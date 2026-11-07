@@ -73,6 +73,12 @@ const menu = [
             }"
             >{{ label }}</RouterLink
           >
+          <RouterLink
+            v-if="state.me.user?.role === 'admin'"
+            to="/admin"
+            class="admin-nav-link"
+            >Administração</RouterLink
+          >
         </nav>
         <div class="header-actions">
           <RouterLink v-if="state.me.user" class="account-link" to="/conta"

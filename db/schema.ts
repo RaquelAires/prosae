@@ -62,3 +62,21 @@ export const authLimits = sqliteTable(
   },
   (table) => [index("auth_limits_expiry_idx").on(table.expiresAt)],
 );
+export const moderation = sqliteTable("moderation", {
+  book: text("book")
+    .primaryKey()
+    .references(() => books.id),
+  blocked: integer("blocked").notNull().default(0),
+  reason: text("reason").notNull(),
+  actor: text("actor").notNull(),
+  updated: integer("updated").notNull(),
+});
+export const moderationEvents = sqliteTable("moderation_events", {
+  id: text("id").primaryKey(),
+  book: text("book").notNull(),
+  title: text("title").notNull(),
+  action: text("action").notNull(),
+  reason: text("reason").notNull(),
+  actor: text("actor").notNull(),
+  created: integer("created").notNull(),
+});

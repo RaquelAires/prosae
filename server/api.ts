@@ -2,6 +2,7 @@ import type { Env } from "./env";
 import { getRequestUser } from "./identity";
 import { seedBooks, seedProfiles, sampleFiles } from "./data";
 import JSZip from "jszip";
+import { isAdministrator } from "./permissions";
 const json = (data: unknown, status = 200) =>
   Response.json(data, { status, headers: { "Cache-Control": "no-store" } });
 function fail(message: string, status = 400): never {
@@ -30,7 +31,11 @@ export function createApi(env: Env) {
           .bind(b.id, b.owner, JSON.stringify(b), "published", b.created),
       ),
     );
-    const r = await db().prepare("SELECT * FROM books").all();
+    const r = await db()
+      .prepare(
+        "SELECT b.*,COALESCE(m.blocked,0) AS blocked,COALESCE(m.reason,'') AS moderation_reason FROM books b LEFT JOIN moderation m ON m.book=b.id",
+      )
+      .all();
     return r.results.map((x: any) => ({
       ...JSON.parse(x.data),
       id: x.id,
@@ -39,6 +44,8 @@ export function createApi(env: Env) {
       created: x.created,
       reads: x.reads,
       downloads: x.downloads,
+      blocked: x.blocked === 1,
+      moderationReason: x.moderation_reason,
     }));
   }
   async function handle(req: Request) {
@@ -56,6 +63,81 @@ export function createApi(env: Env) {
         if (origin && origin !== new URL(req.url).origin)
           fail("Origem da solicitação inválida.", 403);
       }
+      if (path[0] === "admin") {
+        requireUser();
+        if (!isAdministrator(uid, env))
+          fail("Esta área é exclusiva da administração.", 403);
+        if (method === "GET" && path[1] === "catalog") {
+          const books = (await allBooks()).filter((b) => b.status !== "draft");
+          const users = await db()
+            .prepare("SELECT COUNT(*) AS count FROM users")
+            .first<{ count: number }>();
+          const events = await db()
+            .prepare(
+              "SELECT id,title,action,reason,created FROM moderation_events ORDER BY created DESC LIMIT 30",
+            )
+            .all();
+          return json({
+            books: books.map((b) => ({
+              id: b.id,
+              title: b.title,
+              author: b.author,
+              genre: b.genre,
+              status: b.status,
+              reads: b.reads,
+              downloads: b.downloads,
+              blocked: b.blocked,
+              reason: b.moderationReason,
+            })),
+            stats: {
+              accounts: users?.count || 0,
+              published: books.filter(
+                (b) => b.status === "published" && !b.blocked,
+              ).length,
+              blocked: books.filter((b) => b.blocked).length,
+            },
+            events: events.results,
+          });
+        }
+        if (method === "POST" && path[1] === "moderation" && path[2]) {
+          const body: any = await req.json();
+          if (!["block", "restore"].includes(body.action))
+            fail("Ação inválida.");
+          const reason = clean(body.reason, 500);
+          if (reason.length < 5)
+            fail("Explique o motivo com pelo menos 5 caracteres.");
+          const b = (await allBooks()).find(
+            (b) => b.id === path[2] && b.status !== "draft",
+          );
+          if (!b) fail("Obra não encontrada no catálogo.", 404);
+          const blocked = body.action === "block";
+          if (b.blocked === blocked)
+            fail("A obra já está nesse estado. Atualize o painel.", 409);
+          const now = Date.now();
+          await db().batch([
+            db()
+              .prepare(
+                "INSERT INTO moderation(book,blocked,reason,actor,updated) VALUES(?,?,?,?,?) ON CONFLICT(book) DO UPDATE SET blocked=excluded.blocked,reason=excluded.reason,actor=excluded.actor,updated=excluded.updated",
+              )
+              .bind(b.id, blocked ? 1 : 0, reason, uid!, now),
+            db()
+              .prepare(
+                "INSERT INTO moderation_events(id,book,title,action,reason,actor,created) VALUES(?,?,?,?,?,?,?)",
+              )
+              .bind(
+                crypto.randomUUID(),
+                b.id,
+                b.title,
+                body.action,
+                reason,
+                uid!,
+                now,
+              ),
+          ]);
+          return json({ ok: true });
+        }
+        return json({ error: "Operação administrativa não encontrada." }, 404);
+      }
       if (path[0] === "me") {
         if (!uid) return json({ user: null, shelf: [], publications: [] });
         const p: any = await db()
@@ -69,7 +151,12 @@ export function createApi(env: Env) {
           .bind(uid)
           .all();
         return json({
-          user: { id: uid, name: u!.displayName, email: u!.email },
+          user: {
+            id: uid,
+            name: u!.displayName,
+            email: u!.email,
+            role: isAdministrator(uid, env) ? "admin" : "member",
+          },
           profile: p
             ? JSON.parse(p.data)
             : {
@@ -85,7 +172,11 @@ export function createApi(env: Env) {
         });
       }
       if (path[0] === "catalog")
-        return json((await allBooks()).filter((b) => b.status === "published"));
+        return json(
+          (await allBooks())
+            .filter((b) => b.status === "published" && !b.blocked)
+            .map(({ moderationReason, ...book }) => book),
+        );
       if (path[0] === "authors") {
         const r = await db().prepare("SELECT * FROM profiles").all();
         return json([
@@ -219,7 +310,7 @@ export function createApi(env: Env) {
       }
       if (path[0] === "file") {
         const b = (await allBooks()).find((b) => b.id === path[1]);
-        if (!b || (b.status !== "published" && b.owner !== uid))
+        if (!b || ((b.status !== "published" || b.blocked) && b.owner !== uid))
           fail("Livro não encontrado.", 404);
         const download = new URL(req.url).searchParams.get("download") === "1";
         if ((download && !b.download) || (!download && !b.online))
@@ -251,9 +342,13 @@ export function createApi(env: Env) {
       if (path[0] === "book") {
         if (method === "GET") {
           const b = (await allBooks()).find((b) => b.id === path[1]);
-          if (!b || (b.status !== "published" && b.owner !== uid))
+          if (
+            !b ||
+            ((b.status !== "published" || b.blocked) && b.owner !== uid)
+          )
             fail("Livro não encontrado.", 404);
-          return json(b);
+          const { moderationReason, ...publicBook } = b;
+          return json(b.owner === uid ? b : publicBook);
         }
         const owner = requireUser(),
           existing = path[1]
@@ -270,6 +365,12 @@ export function createApi(env: Env) {
             .run();
           return json({ ok: true });
         }
+        if (existing?.blocked)
+          fail(
+            "Esta obra está suspensa pela administração: " +
+              existing.moderationReason,
+            403,
+          );
         const body: any = await req.json(),
           id = existing?.id ?? crypto.randomUUID(),
           status = body.status === "published" ? "published" : "draft";
@@ -375,7 +476,7 @@ export function createApi(env: Env) {
         const owner = requireUser(),
           body: any = await req.json(),
           book = (await allBooks()).find(
-            (b) => b.id === body.book && b.status === "published",
+            (b) => b.id === body.book && b.status === "published" && !b.blocked,
           );
         if (!book) fail("Livro não encontrado.", 404);
         const id = owner + ":" + book.id;
@@ -410,7 +511,11 @@ export function createApi(env: Env) {
       }
       if (path[0] === "read" && method === "POST") {
         const b = (await allBooks()).find(
-          (b) => b.id === path[1] && b.status === "published" && b.online,
+          (b) =>
+            b.id === path[1] &&
+            b.status === "published" &&
+            !b.blocked &&
+            b.online,
         );
         if (!b) fail("Leitura não disponível.", 404);
         await db()

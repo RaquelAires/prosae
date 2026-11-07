@@ -50,7 +50,9 @@ O cadastro é feito em **Criar conta**, informando nome, e-mail e uma senha entr
 
 Em **Minha conta**, é possível consultar os dados da conta, acessar a edição do perfil, alterar a senha e sair. A troca de senha encerra as outras sessões. A opção **Manter conectado** permite uma sessão de até 30 dias; sem ela, a sessão expira em até 12 horas.
 
-**Não existe conta administrativa padrão, senha de administrador ou painel de administração global nesta versão.** Cada pessoa cria sua própria conta e gerencia somente seus livros, perfil e estante. Ter acesso ao repositório GitHub ou à hospedagem não concede um perfil administrativo dentro do site.
+O painel **Administração**, em `/admin`, permite pesquisar o catálogo, consultar indicadores, suspender e liberar obras e acompanhar o histórico das ações. Suspender uma obra interrompe seu acesso público, inclusive por links diretos, sem apagar os arquivos. É obrigatório registrar o motivo. A liberação não republica obras retiradas pelo autor e o painel não mostra rascunhos privados.
+
+**Não existe senha administrativa padrão ou promoção automática no cadastro.** O responsável pela hospedagem libera uma conta específica configurando seu identificador na variável de servidor `PROSAE_ADMIN_USER_ID`. Esse identificador pode ser consultado em **Minha conta**. O acesso é verificado no servidor em cada solicitação; contas comuns continuam gerenciando apenas seus próprios dados. Veja [ADMINISTRACAO.md](ADMINISTRACAO.md).
 
 As senhas são armazenadas como hashes scrypt com salt exclusivo. As sessões são verificadas no servidor e usam cookies HttpOnly, SameSite=Lax e Secure em HTTPS. O servidor limita tentativas de autenticação. Recuperação de senha por e-mail e verificação de e-mail ainda não estão disponíveis.
 
@@ -68,6 +70,7 @@ As senhas são armazenadas como hashes scrypt com salt exclusivo. As sessões s�
 | Minha estante (`/estante`) | Livros salvos, progresso, perfil e publicações próprias |
 | Entrar e criar conta (`/entrar`, `/cadastro`) | Autenticação e cadastro |
 | Minha conta (`/conta`) | Dados da conta, troca de senha e saída |
+| Administração (`/admin`) | Curadoria do catálogo e histórico; somente conta autorizada |
 
 ## Arquivos e armazenamento
 
@@ -134,6 +137,7 @@ Os dados locais ficam em `.wrangler/state`, ignorada pelo Git. Preserve essa pas
 | `npm run test:books` | Validar os PDFs e EPUBs de demonstração |
 | `npm run test:api` | Testar upload, publicação, download, estante e permissões |
 | `npm run test:auth` | Testar cadastro, login, sessões, troca de senha e proteções |
+| `npm run test:admin` | Testar permissões administrativas e suspensão de obras em ambiente local |
 
 Os testes de API e autenticação exigem o servidor local em execução e usam apenas localhost. Para outra porta, defina `PROSAE_TEST_URL` com o endereço local correspondente. O teste de publicação retira sua obra de teste do catálogo ao terminar.
 

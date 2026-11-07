@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 import {
   User,
   LogOut,
@@ -12,6 +12,7 @@ import {
 } from "lucide-vue-next";
 import { state, api, notify, logout } from "../store";
 const router = useRouter(),
+  route = useRoute(),
   form = reactive({ current: "", password: "", confirm: "" }),
   busy = ref(false),
   leaving = ref(false),
@@ -65,6 +66,19 @@ async function signOut() {
         <div class="avatar"><User :size="38" /></div>
         <h2>{{ state.me.profile?.name || state.me.user?.name }}</h2>
         <p>{{ state.me.user?.email }}</p>
+        <p class="admin-id">Identificador da conta: {{ state.me.user?.id }}</p>
+        <p v-if="state.me.user?.role === 'admin'" class="eyebrow">
+          Administradora
+        </p>
+        <RouterLink
+          v-if="state.me.user?.role === 'admin'"
+          class="button dark"
+          to="/admin"
+          >Painel de administração <ArrowUpRight :size="18"
+        /></RouterLink>
+        <p v-if="route.query.acesso === 'restrito'" role="alert">
+          Seu cadastro não tem acesso à administração.
+        </p>
         <RouterLink class="button dark" to="/estante?aba=perfil"
           >Editar perfil de autor <ArrowUpRight :size="18" /></RouterLink
         ><RouterLink class="underlined" to="/estante"

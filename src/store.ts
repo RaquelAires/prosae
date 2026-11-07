@@ -11,7 +11,12 @@ export const state = reactive({
   books: [] as Book[],
   authors: [] as Profile[],
   me: {
-    user: null as null | { id: string; name: string; email: string },
+    user: null as null | {
+      id: string;
+      name: string;
+      email: string;
+      role: "admin" | "member";
+    },
     profile: null as Profile | null,
     shelf: [] as ShelfEntry[],
     publications: [] as Book[],

@@ -10,9 +10,11 @@ import Publisher from "./views/Publisher.vue";
 import Reader from "./views/Reader.vue";
 import Auth from "./views/Auth.vue";
 import Account from "./views/Account.vue";
+import Admin from "./views/Admin.vue";
 import { state, loadSession, safeReturnTo } from "./store";
 import "./style.css";
 import "./auth.css";
+import "./admin.css";
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -23,6 +25,11 @@ const router = createRouter({
     { path: "/estante", component: Shelf, meta: { requiresAuth: true } },
     { path: "/publicar", component: Publisher, meta: { requiresAuth: true } },
     { path: "/conta", component: Account, meta: { requiresAuth: true } },
+    {
+      path: "/admin",
+      component: Admin,
+      meta: { requiresAuth: true, requiresAdmin: true },
+    },
     { path: "/entrar", component: Auth },
     { path: "/cadastro", component: Auth },
     { path: "/ler/:id", component: Reader },
@@ -39,6 +46,8 @@ router.beforeEach(async (to) => {
     }
     if (to.meta.requiresAuth && !state.me.user)
       return { path: "/entrar", query: { retorno: to.fullPath } };
+    if (to.meta.requiresAdmin && state.me.user?.role !== "admin")
+      return "/conta?acesso=restrito";
     if (["/entrar", "/cadastro"].includes(to.path) && state.me.user)
       return safeReturnTo(to.query.retorno);
   }

@@ -1,0 +1,238 @@
+.admin-page {
+  padding-bottom: 90px;
+}
+.admin-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.admin-title .eyebrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.admin-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+  margin: 24px 0 40px;
+}
+.admin-stats article {
+  padding: 25px;
+  background: #00533a;
+  color: #fffced;
+}
+.admin-stats article:nth-child(2) {
+  background: #f5d32c;
+  color: #073e2c;
+}
+.admin-stats article:nth-child(3) {
+  background: #1546bc;
+}
+.admin-stats span {
+  display: block;
+  font-size: 14px;
+}
+.admin-stats strong {
+  font-size: 62px;
+  line-height: 1.3;
+}
+.admin-tools {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 20px;
+}
+.admin-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid #9aa799;
+  background: #fffdf7;
+  padding-left: 16px;
+}
+.admin-search input {
+  border: 0 !important;
+  background: transparent !important;
+}
+.admin-note {
+  font-size: 14px;
+  line-height: 1.7;
+  max-width: 850px;
+  margin: 20px 0 30px;
+}
+.admin-book {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 0;
+  border-top: 1px solid #b4bbaa;
+}
+.admin-book h2 {
+  font-size: 32px;
+  margin: 5px 0;
+}
+.admin-book p {
+  margin: 8px 0;
+}
+.admin-badge {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  background: #dce7d6;
+  padding: 6px 10px;
+  margin-top: 5px;
+}
+.admin-badge.blocked {
+  background: #f6dfcf;
+  color: #873e25;
+}
+.admin-reason {
+  font-size: 13px;
+  max-width: 650px;
+  overflow-wrap: anywhere;
+}
+.admin-book-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
+  min-width: 200px;
+}
+.admin-book-actions > span {
+  font-size: 12px;
+}
+.admin-danger {
+  color: #823e25;
+  border-color: #b5745a;
+}
+.admin-empty {
+  padding: 50px 20px;
+  text-align: center;
+  border: 1px dashed #91a08e;
+}
+.admin-history {
+  margin-top: 60px;
+}
+.admin-history h2 {
+  font-size: 42px;
+  margin: 10px 0 25px;
+}
+.admin-history ol {
+  list-style: none;
+  padding: 0;
+}
+.admin-history li {
+  display: flex;
+  justify-content: space-between;
+  gap: 25px;
+  border-top: 1px solid #c4cab9;
+  padding: 20px 0;
+  font-size: 14px;
+}
+.admin-history li p {
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+.admin-history time {
+  font-size: 12px;
+  white-space: nowrap;
+}
+.admin-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  width: min(560px, calc(100% - 32px));
+  max-height: 90vh;
+  overflow: auto;
+  border: 1px solid #1b4b33;
+  background: #fffdf4;
+  color: #073e2c;
+  z-index: 101;
+  padding: 36px;
+}
+.admin-dialog h2 {
+  font-size: 38px;
+  line-height: 1.1;
+  margin: 15px 0;
+}
+.admin-dialog p {
+  line-height: 1.6;
+}
+.admin-dialog .field {
+  margin-top: 25px;
+}
+.admin-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 25px;
+}
+.admin-close {
+  position: absolute;
+  right: 12px;
+  top: 12px;
+}
+.admin-backdrop {
+  position: fixed;
+  inset: 0;
+  background: #012a23aa;
+  z-index: 100;
+}
+.admin-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 700;
+}
+.admin-access-note {
+  margin: 20px 0;
+  padding: 16px;
+  background: #e3eada;
+}
+.admin-id {
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+@media (max-width: 700px) {
+  .admin-title {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .admin-stats {
+    gap: 8px;
+    margin-top: 30px;
+  }
+  .admin-stats article {
+    padding: 14px;
+  }
+  .admin-stats strong {
+    font-size: 38px;
+  }
+  .admin-stats span {
+    font-size: 11px;
+  }
+  .admin-tools {
+    grid-template-columns: 1fr;
+  }
+  .admin-book {
+    flex-direction: column;
+  }
+  .admin-book-actions {
+    align-items: flex-start;
+  }
+  .admin-history li {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .admin-dialog {
+    padding: 28px;
+  }
+  .admin-dialog h2 {
+    font-size: 32px;
+  }
+}
+.admin-dialog::backdrop {
+  background: #012a23aa;
+}
