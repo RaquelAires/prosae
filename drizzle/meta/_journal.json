@@ -8,6 +8,13 @@
       "when": 1793974879670,
       "tag": "0000_steady_random",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1794015784502,
+      "tag": "0001_minor_starfox",
+      "breakpoints": true
     }
   ]
 }

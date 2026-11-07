@@ -11,7 +11,7 @@ export const state = reactive({
   books: [] as Book[],
   authors: [] as Profile[],
   me: {
-    user: null as null | { id: string; name: string },
+    user: null as null | { id: string; name: string; email: string },
     profile: null as Profile | null,
     shelf: [] as ShelfEntry[],
     publications: [] as Book[],
@@ -55,8 +55,35 @@ export const login = (
   returnTo = window.location.pathname + window.location.search,
 ) =>
   window.location.assign(
-    "/signin-with-chatgpt?return_to=" + encodeURIComponent(returnTo),
+    "/entrar?retorno=" + encodeURIComponent(safeReturnTo(returnTo)),
   );
+export function safeReturnTo(value: unknown, fallback = "/estante") {
+  if (
+    typeof value !== "string" ||
+    !value.startsWith("/") ||
+    value.startsWith("//")
+  )
+    return fallback;
+  try {
+    const url = new URL(value, "https://prosae.local");
+    if (
+      url.origin !== "https://prosae.local" ||
+      ["/entrar", "/cadastro"].includes(url.pathname)
+    )
+      return fallback;
+    return url.pathname + url.search + url.hash;
+  } catch {
+    return fallback;
+  }
+}
+export async function loadSession() {
+  state.me = await api("me");
+}
+export async function logout() {
+  await api("auth/logout", {});
+  state.me = { user: null, profile: null, shelf: [], publications: [] };
+  notify("Você saiu da sua conta.");
+}
 export const imageUrl = (value: string) =>
   value?.startsWith("/") ? value : "/api/image/" + value;
 export const filesize = (n: number) =>

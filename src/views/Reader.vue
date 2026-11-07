@@ -472,9 +472,8 @@ onBeforeUnmount(() => {
           }}</template
           ><a
             v-else
-            :href="'/signin-with-chatgpt?return_to=/ler/' + book?.id"
-            target="_top"
-            >Entre para sincronizar a leitura entre dispositivos.</a
+            :href="'/entrar?retorno=/ler/' + book?.id"
+                >Entre para sincronizar a leitura entre dispositivos.</a
           ></small
         >
       </div>

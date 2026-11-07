@@ -98,9 +98,8 @@ async function confirmWithdraw() {
       </p>
       <a
         class="button dark"
-        href="/signin-with-chatgpt?return_to=/estante"
-        target="_top"
-        >Entrar com ChatGPT <ArrowUpRight :size="18" /></a></EmptyState
+        href="/entrar?retorno=/estante"
+        >Entrar na minha conta <ArrowUpRight :size="18" /></a></EmptyState
     ><template v-else
       ><div class="page-heading">
         <span class="eyebrow">Um lugar para chamar de seu</span>

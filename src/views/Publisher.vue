@@ -204,10 +204,9 @@ async function submit(draft: boolean) {
         leitores.
       </p>
       <a
-        href="/signin-with-chatgpt?return_to=/publicar"
-        target="_top"
+        href="/entrar?retorno=/publicar"
         class="button dark"
-        >Entrar com ChatGPT <ArrowUpRight :size="20"
+        >Entrar na minha conta <ArrowUpRight :size="20"
       /></a>
     </div>
     <template v-else

@@ -33,9 +33,9 @@ src/
   components/             Capas, cards, títulos e estados da interface
   views/                  Início, catálogo, livro, autores, estante, publicação e leitor
 server/
-  index.ts                Worker HTTP e login simulado apenas no desenvolvimento
+  index.ts                Worker HTTP e rotas de autenticação
   api.ts                  API, autorização, uploads e persistência
-  identity.ts             Leitura da identidade fornecida pela hospedagem
+  identity.ts             Identidade da sessão persistente
   env.ts                  Tipos dos recursos do servidor
   data.ts                 Obras e perfis de demonstração
 db/schema.ts              Esquema do banco
@@ -59,6 +59,8 @@ vite.config.ts            Vue e integração do servidor com Vite
 | `/autores/:id` | Perfil e publicações |
 | `/publicar` | Envio por etapas, rascunho e revisão |
 | `/estante` | Livros salvos, progresso, perfil e publicações |
+| `/entrar` e `/cadastro` | Entrada e criação de conta |
+| `/conta` | Conta, troca de senha e saída |
 
 ## Dados e arquivos
 
@@ -75,9 +77,11 @@ vite.config.ts            Vue e integração do servidor com Vite
 
 O catálogo pode ser explorado sem login. Publicar, salvar livros e sincronizar leituras exige autenticação.
 
-Em `npm run dev`, **Entrar** usa uma identidade local de teste somente em localhost. Essa simulação é removida da compilação de produção.
+O cadastro em `/cadastro` e a entrada em `/entrar` usam e-mail e senha própria, tanto localmente quanto em produção. A senha deve ter entre 12 e 128 caracteres e é armazenada como hash scrypt com salt exclusivo. As sessões ficam no D1; o navegador recebe um cookie HttpOnly, SameSite=Lax e Secure em HTTPS.
 
-Na hospedagem atual, o login é fornecido pelo ChatGPT e o servidor usa os cabeçalhos de identidade autenticada da plataforma. Para hospedar em outro provedor, conecte um provedor de autenticação confiável e adapte `server/identity.ts`; não aceite cabeçalhos de identidade vindos diretamente do público.
+Em `/conta`, é possível consultar o perfil, alterar a senha e sair. A troca de senha encerra as outras sessões. A opção de manter conectado dura até 30 dias; sem ela, a sessão expira em até 12 horas. O servidor limita tentativas de autenticação. Recuperação de senha por e-mail e verificação de e-mail ainda não estão configuradas.
+
+Contas nativas são novas e não são vinculadas automaticamente às antigas identidades da hospedagem. Os registros anteriores permanecem no banco. Execute `npm run db:local` após atualizar o projeto para aplicar as novas tabelas sem apagar os dados.
 
 ## Comandos
 
@@ -91,6 +95,7 @@ Na hospedagem atual, o login é fornecido pelo ChatGPT e o servidor usa os cabe�
 | `npm run db:generate` | Gera migrações após alteração do esquema |
 | `npm run test:books` | Valida os PDFs e EPUBs de demonstração |
 | `npm run test:api` | Testa upload, publicação, estante e permissões no servidor local |
+| `npm run test:auth` | Testa cadastro, sessões, senha, CSRF e limites de tentativas |
 
 Os testes de API usam somente localhost e retiram do catálogo a publicação de teste ao terminar.
 

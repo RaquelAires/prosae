@@ -15,7 +15,8 @@
     "db:local": "node scripts/migrate-local.mjs",
     "test:books": "node scripts/validate-books.mjs",
     "test:api": "node scripts/test-api.mjs",
-    "install:ci": "node scripts/install-ci.mjs"
+    "install:ci": "node scripts/install-ci.mjs",
+    "test:auth": "node scripts/test-auth.mjs"
   },
   "dependencies": {
     "vue": "^3.5.0",

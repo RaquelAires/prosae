@@ -1,16 +1,7 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-const base = process.env.PROSAE_TEST_URL || "http://127.0.0.1:5173";
-if (!/^http:\/\/(127\.0\.0\.1|localhost):\d+$/.test(base))
-  throw new Error("Este teste grava dados: use somente uma instância local.");
-const auth = await fetch(base + "/signin-with-chatgpt?return_to=/", {
-  redirect: "manual",
-});
-const cookie = auth.headers
-  .getSetCookie()
-  .map((s) => s.split(";")[0])
-  .join("; ");
-assert(cookie, "Login local não respondeu. Inicie com npm run dev.");
+import { base, testSession } from "./test-session.mjs";
+const cookie = await testSession();
 const headers = { cookie, "Content-Type": "application/json" };
 const cat = await (await fetch(base + "/api/catalog")).json();
 assert(cat.length >= 6);

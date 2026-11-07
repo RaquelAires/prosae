@@ -48,7 +48,7 @@ export function createApi(env: Env) {
           .filter(Boolean)
           .slice(1),
         method = req.method,
-        u = getRequestUser(req),
+        u = await getRequestUser(req, env),
         uid = u?.userId;
       const requireUser = () => uid || fail("Entre para continuar.", 401);
       if (method !== "GET") {
@@ -69,7 +69,7 @@ export function createApi(env: Env) {
           .bind(uid)
           .all();
         return json({
-          user: { id: uid, name: u!.displayName },
+          user: { id: uid, name: u!.displayName, email: u!.email },
           profile: p
             ? JSON.parse(p.data)
             : {
@@ -117,12 +117,16 @@ export function createApi(env: Env) {
           photo,
         };
         if (!data.name) fail("Informe seu nome.");
-        await db()
-          .prepare(
-            "INSERT INTO profiles(id,data) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data",
-          )
-          .bind(id, JSON.stringify(data))
-          .run();
+        await db().batch([
+          db()
+            .prepare(
+              "INSERT INTO profiles(id,data) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data",
+            )
+            .bind(id, JSON.stringify(data)),
+          db()
+            .prepare("UPDATE users SET name=? WHERE id=?")
+            .bind(data.name, id),
+        ]);
         return json(data);
       }
       if (path[0] === "upload" && method === "POST") {

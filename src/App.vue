@@ -1,10 +1,23 @@
 <script setup lang="ts">
 import { onMounted, ref, watch, computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { Menu, X, ArrowUpRight, User, LogOut, Star } from "lucide-vue-next";
-import { state, refresh } from "./store";
+import { state, refresh, logout, notify } from "./store";
 import LoadingState from "./components/LoadingState.vue";
 import EmptyState from "./components/EmptyState.vue";
+const router = useRouter();
+const leaving = ref(false);
+async function signOut() {
+  leaving.value = true;
+  try {
+    await logout();
+    await router.replace("/");
+  } catch (e: any) {
+    notify(e.message);
+  } finally {
+    leaving.value = false;
+  }
+}
 const route = useRoute(),
   mobile = ref(false),
   reader = computed(() => route.path.startsWith("/ler/"));
@@ -62,22 +75,25 @@ const menu = [
           >
         </nav>
         <div class="header-actions">
-          <a
-            v-if="state.me.user"
-            class="account-link"
-            href="/signout-with-chatgpt?return_to=/"
-            target="_top"
-            ><LogOut :size="17" /><span>Sair</span></a
-          ><a
+          <RouterLink v-if="state.me.user" class="account-link" to="/conta"
+            ><User :size="17" /><span>Minha conta</span></RouterLink
+          >
+          <RouterLink
             v-else
             class="account-link"
-            :href="
-              '/signin-with-chatgpt?return_to=' +
-              encodeURIComponent(route.fullPath)
-            "
-            target="_top"
-            ><User :size="17" /><span>Entrar</span></a
-          ><RouterLink class="button small dark" to="/publicar"
+            :to="{ path: '/entrar', query: { retorno: route.fullPath } }"
+            ><User :size="17" /><span>Entrar</span></RouterLink
+          >
+          <button
+            v-if="state.me.user"
+            class="icon-button header-logout"
+            :disabled="leaving"
+            aria-label="Sair da conta"
+            @click="signOut"
+          >
+            <LogOut :size="17" />
+          </button>
+          <RouterLink class="button small dark" to="/publicar"
             >Publicar minha obra <ArrowUpRight :size="17"
           /></RouterLink>
         </div>
