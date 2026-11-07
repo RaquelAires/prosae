@@ -1,10 +1,96 @@
 # Prosaê
 
-Biblioteca digital brasileira feita com **Vue 3**, **Vue Router**, **TypeScript** e **Vite**. Autores podem enviar livros e capas; leitores podem descobrir obras, ler PDF/EPUB, baixar arquivos autorizados e organizar a estante.
+**Histórias que atravessam o Brasil.**
 
-## Abrir no VS Code
+O Prosaê é uma biblioteca digital brasileira que conecta leitores e autores. O site reúne livros para descobrir, ler online e baixar, conforme as opções autorizadas pelo responsável por cada obra. Para quem escreve, oferece um espaço para publicar livros, apresentar seu trabalho e gerenciar suas publicações.
 
-Abra esta pasta, a que contém `package.json`, no VS Code. Instale a extensão **Vue - Official** sugerida pelo projeto.
+A identidade visual celebra a cultura e a biodiversidade brasileiras: verde, amarelo, azul e branco, tipografia expressiva, folhas e ilustrações de onça-pintada e arara.
+
+[Acessar o Prosaê](https://prosae-leitura-brasileira.splendidbrink.chatgpt.site/) · [Repositório](https://github.com/RaquelAires/prosae)
+
+## Para que serve
+
+- **Leitores:** encontrar histórias, conhecer autores, ler no navegador e organizar uma estante pessoal.
+- **Autores:** compartilhar obras em PDF ou EPUB, enviar capas e escolher se os livros poderão ser lidos online, baixados ou ambos.
+- **Visitantes:** explorar o catálogo e conhecer as obras sem precisar criar uma conta.
+
+## Como usar o site
+
+### Encontrar um livro
+
+Na página inicial, o visitante encontra seleções editoriais e destaques do catálogo. Em **Explorar livros**, pode pesquisar por título, autor e palavras-chave, usar filtros e ordenar os resultados. Cada card leva à página exclusiva da obra.
+
+A página do livro apresenta capa, autoria, sinopse, dados da publicação e a seção **Por dentro da história**, com atmosfera, temas e uma frase de destaque. Os botões de leitura e download aparecem conforme a disponibilidade definida pelo autor. Antes de baixar, é possível conferir o formato e o tamanho do arquivo.
+
+### Ler e organizar a estante
+
+O leitor online abre em uma página dedicada, com navegação, progresso, marcador e tela cheia. Os controles se adaptam ao arquivo:
+
+| Formato | Recursos de leitura |
+| --- | --- |
+| PDF | Navegação por páginas, zoom e ajuste à largura |
+| EPUB | Navegação por capítulos, tamanho de fonte, espaçamento e temas de leitura |
+
+Com uma conta, o leitor pode salvar livros em **Quero ler**, **Lendo** ou **Concluídos**, registrar seu progresso e retomar a leitura.
+
+### Publicar uma obra
+
+Depois de entrar na conta, o autor acessa **Publicar minha obra** e segue quatro etapas:
+
+1. **Arquivo:** envia o livro em PDF ou EPUB.
+2. **Capa:** envia uma imagem e confere a prévia.
+3. **Sobre a obra:** preenche título, autoria, sinopse, gênero e demais informações; define as opções de leitura e download.
+4. **Revisão:** confere os dados e confirma que possui autorização para compartilhar o conteúdo antes de publicar.
+
+É possível salvar um rascunho antes da publicação. Em **Minha estante**, o autor também pode editar seu perfil e consultar, editar ou retirar suas próprias publicações. O diretório **Autores** reúne os perfis e suas obras.
+
+## Conta, login e permissões
+
+O cadastro é feito em **Criar conta**, informando nome, e-mail e uma senha entre **12 e 128 caracteres**. Depois, basta usar o e-mail e a senha em **Entrar**. Publicar, salvar livros e sincronizar o progresso exigem login.
+
+Em **Minha conta**, é possível consultar os dados da conta, acessar a edição do perfil, alterar a senha e sair. A troca de senha encerra as outras sessões. A opção **Manter conectado** permite uma sessão de até 30 dias; sem ela, a sessão expira em até 12 horas.
+
+**Não existe conta administrativa padrão, senha de administrador ou painel de administração global nesta versão.** Cada pessoa cria sua própria conta e gerencia somente seus livros, perfil e estante. Ter acesso ao repositório GitHub ou à hospedagem não concede um perfil administrativo dentro do site.
+
+As senhas são armazenadas como hashes scrypt com salt exclusivo. As sessões são verificadas no servidor e usam cookies HttpOnly, SameSite=Lax e Secure em HTTPS. O servidor limita tentativas de autenticação. Recuperação de senha por e-mail e verificação de e-mail ainda não estão disponíveis.
+
+## Páginas
+
+| Página | O que oferece |
+| --- | --- |
+| Início (`/`) | Apresentação, seleções e destaques editoriais |
+| Explorar livros (`/explorar`) | Busca, sugestões, filtros e ordenação |
+| Livro (`/livro/:id`) | Informações, leitura, download e recomendações |
+| Leitor (`/ler/:id`) | Leitura online de PDF ou EPUB |
+| Autores (`/autores`) | Diretório de autores |
+| Perfil (`/autores/:id`) | Apresentação do autor e suas obras |
+| Publicar (`/publicar`) | Envio por etapas, rascunho e revisão |
+| Minha estante (`/estante`) | Livros salvos, progresso, perfil e publicações próprias |
+| Entrar e criar conta (`/entrar`, `/cadastro`) | Autenticação e cadastro |
+| Minha conta (`/conta`) | Dados da conta, troca de senha e saída |
+
+## Arquivos e armazenamento
+
+| Conteúdo | Formatos aceitos | Limite por arquivo |
+| --- | --- | --- |
+| Livro | PDF e EPUB | 25 MB |
+| Capa | JPG, PNG e WebP | 5 MB |
+
+Livros, perfis, rascunhos, estantes, progresso, contas e sessões ficam no **Cloudflare D1**. Arquivos enviados e capas ficam no **Cloudflare R2**. Produção e desenvolvimento usam dados separados.
+
+As seis obras iniciais são exemplos originais com autores fictícios, identificados na interface. O leitor EPUB extrai conteúdo sem executar scripts dos livros; arquivos com DRM ou diagramação fixa não são suportados. Novas contas por e-mail não são vinculadas automaticamente às antigas identidades da hospedagem; os registros anteriores permanecem no banco.
+
+## Tecnologias
+
+- **Interface:** Vue 3, Vue Router, TypeScript e Vite.
+- **Servidor:** Cloudflare Worker, com API para autenticação, catálogo, uploads e permissões.
+- **Persistência:** Cloudflare D1, Drizzle ORM e migrações SQL; Cloudflare R2 para arquivos.
+- **Leitura:** PDF.js para PDF e JSZip para extração de EPUB.
+- **Ícones:** Lucide.
+
+## Executar no VS Code
+
+Instale o **Node.js 22.13 ou superior**, abra a pasta que contém `package.json` no VS Code e instale a extensão **Vue - Official** sugerida pelo projeto.
 
 No terminal integrado:
 
@@ -15,107 +101,44 @@ npm run db:local
 npm run dev
 ```
 
-Acesse **http://127.0.0.1:5173**. Nas próximas vezes, basta executar `npm run dev`. O terminal deve permanecer aberto; **Ctrl+C** encerra o servidor.
+Abra o endereço indicado no terminal, normalmente **http://127.0.0.1:5173**. Se a porta estiver ocupada, o Vite informa outra. Mantenha o terminal aberto enquanto usa o site; **Ctrl+C** encerra o servidor.
 
-No ambiente em que o projeto foi preparado, dependências e banco local já estão prontos.
+Nas próximas execuções, use `npm run dev`. Após atualizações que adicionem migrações, execute novamente o build e `npm run db:local` antes de iniciar. O cadastro local funciona com e-mail e senha próprios, mas as contas não são compartilhadas com a produção.
 
-Também é possível usar **Terminal → Executar Tarefa → Prosaê: iniciar Vue**. A tarefa de compilação está disponível em **Terminal → Executar Tarefa de Compilação**.
+Os dados locais ficam em `.wrangler/state`, ignorada pelo Git. Preserve essa pasta para manter os cadastros e uploads de desenvolvimento. A tarefa **Prosaê: iniciar Vue** também está disponível em **Terminal → Executar Tarefa**.
 
-## Estrutura
+## Organização do projeto
 
-```text
-src/
-  App.vue                 Layout principal
-  main.ts                 Vue e configuração do Vue Router
-  store.ts                Estado compartilhado e cliente da API
-  types.ts                Tipos das obras e perfis
-  style.css               Identidade visual e responsividade
-  components/             Capas, cards, títulos e estados da interface
-  views/                  Início, catálogo, livro, autores, estante, publicação e leitor
-server/
-  index.ts                Worker HTTP e rotas de autenticação
-  api.ts                  API, autorização, uploads e persistência
-  identity.ts             Identidade da sessão persistente
-  env.ts                  Tipos dos recursos do servidor
-  data.ts                 Obras e perfis de demonstração
-db/schema.ts              Esquema do banco
-drizzle/                  Migrações SQL versionadas
-public/                   Onça, arara, capas, exemplos e worker do PDF.js
-scripts/                  Preparação do banco e testes
-.vscode/                  Extensão recomendada e tarefas do VS Code
-wrangler.jsonc            Configuração do servidor e recursos Cloudflare
-vite.config.ts            Vue e integração do servidor com Vite
-```
-
-## Rotas
-
-| Rota | Função |
+| Local | Responsabilidade |
 | --- | --- |
-| `/` | Início e seleções editoriais |
-| `/explorar` | Busca, sugestões, filtros e ordenação |
-| `/livro/:id` | Detalhes, sinopse, download e recomendações |
-| `/ler/:id` | Leitor de PDF ou EPUB |
-| `/autores` | Diretório de autores |
-| `/autores/:id` | Perfil e publicações |
-| `/publicar` | Envio por etapas, rascunho e revisão |
-| `/estante` | Livros salvos, progresso, perfil e publicações |
-| `/entrar` e `/cadastro` | Entrada e criação de conta |
-| `/conta` | Conta, troca de senha e saída |
+| `src/` | Interface Vue, componentes, páginas e estilos |
+| `server/` | API, autenticação, sessões e acesso aos arquivos |
+| `db/schema.ts` | Esquema do banco de dados |
+| `drizzle/` | Migrações SQL versionadas |
+| `public/` | Ilustrações, capas, exemplos e worker do PDF.js |
+| `scripts/` | Preparação do banco e testes de integração |
+| `.vscode/` | Extensão recomendada e tarefas do editor |
+| `wrangler.jsonc` | Configuração Cloudflare |
+| `vite.config.ts` | Configuração do Vue e servidor de desenvolvimento |
 
-## Dados e arquivos
+## Comandos de desenvolvimento
 
-- **D1** armazena livros, perfis, rascunhos, estantes e progresso.
-- **R2** armazena os arquivos enviados e as capas.
-- No desenvolvimento, os dados ficam em `.wrangler/state`. Essa pasta é ignorada pelo Git e não deve ser apagada se você quiser manter os uploads locais.
-- Produção e desenvolvimento usam bancos e arquivos separados. A migração para Vue preserva o esquema e os dados anteriores.
-- `npm run db:local` prepara um banco vazio ou reconhece o esquema existente sem recriar tabelas.
-- PDF e EPUB: até **25 MB**. Capas JPG, PNG e WebP: até **5 MB**. O servidor verifica tipo, autoria e disponibilidade da obra.
-- O leitor PDF usa **PDF.js**. O leitor EPUB extrai texto com **JSZip**, permite ajustes de fonte/tema e não executa scripts das obras. EPUBs com DRM ou diagramação fixa não são suportados.
-- As seis obras iniciais são exemplos originais, com autores fictícios, identificados na interface.
-
-## Login
-
-O catálogo pode ser explorado sem login. Publicar, salvar livros e sincronizar leituras exige autenticação.
-
-O cadastro em `/cadastro` e a entrada em `/entrar` usam e-mail e senha própria, tanto localmente quanto em produção. A senha deve ter entre 12 e 128 caracteres e é armazenada como hash scrypt com salt exclusivo. As sessões ficam no D1; o navegador recebe um cookie HttpOnly, SameSite=Lax e Secure em HTTPS.
-
-Em `/conta`, é possível consultar o perfil, alterar a senha e sair. A troca de senha encerra as outras sessões. A opção de manter conectado dura até 30 dias; sem ela, a sessão expira em até 12 horas. O servidor limita tentativas de autenticação. Recuperação de senha por e-mail e verificação de e-mail ainda não estão configuradas.
-
-Contas nativas são novas e não são vinculadas automaticamente às antigas identidades da hospedagem. Os registros anteriores permanecem no banco. Execute `npm run db:local` após atualizar o projeto para aplicar as novas tabelas sem apagar os dados.
-
-## Comandos
-
-| Comando | Função |
+| Comando | Finalidade |
 | --- | --- |
-| `npm run dev` | Servidor Vue com atualização automática |
-| `npm run typecheck` | Verifica TypeScript e templates Vue |
-| `npm run build` | Verifica tipos e compila cliente e servidor |
-| `npm run preview` | Executa a compilação local em `http://127.0.0.1:4173` |
-| `npm run db:local` | Prepara/preserva o banco local |
-| `npm run db:generate` | Gera migrações após alteração do esquema |
-| `npm run test:books` | Valida os PDFs e EPUBs de demonstração |
-| `npm run test:api` | Testa upload, publicação, estante e permissões no servidor local |
-| `npm run test:auth` | Testa cadastro, sessões, senha, CSRF e limites de tentativas |
+| `npm run dev` | Iniciar o ambiente local com atualização automática |
+| `npm run typecheck` | Verificar TypeScript e templates Vue |
+| `npm run build` | Verificar tipos e compilar cliente e servidor |
+| `npm run preview` | Executar o build local na porta 4173 |
+| `npm run db:local` | Aplicar migrações preservando os dados locais |
+| `npm run db:generate` | Gerar migrações após alterar o esquema |
+| `npm run test:books` | Validar os PDFs e EPUBs de demonstração |
+| `npm run test:api` | Testar upload, publicação, download, estante e permissões |
+| `npm run test:auth` | Testar cadastro, login, sessões, troca de senha e proteções |
 
-Os testes de API usam somente localhost e retiram do catálogo a publicação de teste ao terminar.
+Os testes de API e autenticação exigem o servidor local em execução e usam apenas localhost. Para outra porta, defina `PROSAE_TEST_URL` com o endereço local correspondente. O teste de publicação retira sua obra de teste do catálogo ao terminar.
 
-## Commit e envio ao GitHub
+## Hospedagem e contribuição
 
-O projeto já tem um repositório Git. A pasta `.vscode` pode ser versionada; `node_modules`, builds, dados locais e arquivos de configuração com segredos são ignorados.
+O GitHub guarda o código-fonte; banco, contas e uploads não são enviados junto com os commits. O **GitHub Pages não executa o backend necessário para o funcionamento completo do Prosaê**. A hospedagem atual reúne interface, Worker, D1 e R2.
 
-No VS Code, abra **Controle do Código-Fonte** (`Ctrl+Shift+G`) para revisar as alterações e criar commits. Para enviar a um novo repositório, use **Publicar Branch** e escolha sua conta do GitHub.
-
-Se você já criou um repositório vazio no GitHub, configure o endereço dele:
-
-```bash
-git remote add origin https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git
-git push -u origin main
-```
-
-Se `origin` já estiver configurado, confira `git remote -v` antes de alterá-lo. O envio dos arquivos para o GitHub versiona o código; ele não transfere o banco e os uploads nem executa o servidor no GitHub Pages.
-
-## Publicação
-
-A configuração `.openai/hosting.json` mantém a identidade da hospedagem atual e os recursos D1/R2. A compilação gera `dist/client` e `dist/server/index.js`.
-
-Para outro ambiente Cloudflare, crie os recursos D1/R2 na sua conta, substitua os identificadores de exemplo em `wrangler.jsonc`, aplique as migrações e configure a autenticação. Não coloque tokens nem arquivos `.env` no repositório.
+Consulte [PUBLICACAO.md](PUBLICACAO.md) para as orientações de implantação em outra conta Cloudflare. Não versione senhas, tokens, arquivos de ambiente ou dados locais. Para contribuir, revise suas alterações no controle de código-fonte do VS Code, execute as verificações adequadas e envie os commits ao repositório.
