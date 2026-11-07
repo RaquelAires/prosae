@@ -1,173 +1,116 @@
-# Prosaê — biblioteca digital brasileira
+# Prosaê
+
+Biblioteca digital brasileira feita com **Vue 3**, **Vue Router**, **TypeScript** e **Vite**. Autores podem enviar livros e capas; leitores podem descobrir obras, ler PDF/EPUB, baixar arquivos autorizados e organizar a estante.
 
 ## Abrir no VS Code
 
-1. Em **Arquivo → Abrir Pasta**, selecione a pasta `prosae` (a pasta que contém `package.json`).
-2. Abra **Terminal → Novo Terminal**.
-3. Execute `npm run dev`.
-4. Abra o endereço impresso no terminal, normalmente **http://127.0.0.1:5173**. No VS Code, segure Ctrl e clique no endereço.
+Abra esta pasta, a que contém `package.json`, no VS Code. Instale a extensão **Vue - Official** sugerida pelo projeto.
 
-O ambiente atual já tem as dependências e o banco local preparados. Mantenha o terminal aberto enquanto usar o site. Para parar, pressione **Ctrl+C**. Se a porta estiver ocupada, execute `npm run dev -- --port 5174` e abra o novo endereço.
+No terminal integrado:
 
-Este projeto precisa do servidor de desenvolvimento. A extensão Live Server e a abertura direta de um HTML não executam o login, o banco e os uploads.
-
-## Em outro computador
-
-Requer Node.js 22.13 ou superior. Instale as dependências com `npm ci`. Depois execute `npm run build` e aplique a migração inicial **uma única vez em um banco vazio**:
-
-```powershell
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_steady_random.sql
+```bash
+npm ci
+npm run build
+npm run db:local
 npm run dev
 ```
 
-Arquivos e dados de desenvolvimento ficam em `.wrangler/state`; mantenha essa pasta para preservar uploads e contas de teste. Os dados locais são separados dos dados de produção.
+Acesse **http://127.0.0.1:5173**. Nas próximas vezes, basta executar `npm run dev`. O terminal deve permanecer aberto; **Ctrl+C** encerra o servidor.
 
-## Uso
+No ambiente em que o projeto foi preparado, dependências e banco local já estão prontos.
 
-- Explore sem login em `/explorar`; abra os detalhes em `/livro/ID` e o leitor em `/ler/ID`.
-- Para publicar e salvar leituras, use **Entrar**. Em desenvolvimento, o login é simulado pela integração local da plataforma; na hospedagem, a autenticação é feita pelo ChatGPT.
-- Envie PDF ou EPUB de até 25 MB e capas JPG, PNG ou WebP de até 5 MB. Revise a obra e confirme a autorização antes de publicar.
-- Gerencie rascunhos, publicações, perfil e estante em `/estante`.
-- As seis obras iniciais são demonstrações, com autores fictícios e arquivos originais de exemplo.
+Também é possível usar **Terminal → Executar Tarefa → Prosaê: iniciar Vue**. A tarefa de compilação está disponível em **Terminal → Executar Tarefa de Compilação**.
 
-## Arquitetura e limites
+## Estrutura
 
-React/Vinext com rotas dedicadas; Cloudflare D1 para obras, perfis e estantes; R2 para arquivos e imagens. As operações protegidas verificam identidade e autoria no servidor. PDF usa PDF.js e EPUB usa JSZip com extração segura do texto. O leitor EPUB apresenta o conteúdo textual e não reproduz diagramações fixas, scripts ou DRM.
-
-`npm run build` gera a versão de produção; `node node_modules/typescript/bin/tsc --noEmit` verifica os tipos. As tabelas são declaradas em `db/schema.ts`; as migrações estão em `drizzle/`. Configuração da hospedagem em `.openai/hosting.json`.
-
----
-
-## Referência técnica do runtime
-
-A clean full-stack starter running on [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and Drizzle support.
-
-## Prerequisites
-
-- Node.js `>=22.13.0`
-- Portable: Windows, macOS, or Linux; no Bash required
-- Managed Linux: managed Linux runtime with Bash, `flock`, `curl`, `sha256sum`, and GNU `timeout`
-- Git and `tar` (including Windows `tar.exe`) are required for publishing; portable publication does not require Bash
-
-## Sites Lifecycle
-
-The Sites initializer copies the shared starter and selects managed-linux only when `SITES_MANAGED_LINUX_CONTAINER=1`; otherwise it selects portable. It saves the selection only in ignored `.sites-runtime/execution-profile.json`. Both profiles copy/configure first, then use the plugin's separate `install-dependencies.mjs` step to measure installation independently. Edit source under `app/` and follow the Sites skill for installation, preview, builds, and publishing.
-
-Run `node <plugin-root>/scripts/configure-execution-profile.mjs` only when the profile is unknown for the current checkout and environment. Profile changes do not alter tracked source or require reinstalling otherwise-valid dependencies; restart an existing preview to use the new selection. Do not commit or upload `.sites-runtime/`.
-
-This starter does not use `wrangler.jsonc`.
-
-Publish archives outside the source checkout or under its ignored `outputs/` directory. Local `.env*`, `.dev.vars*`, TypeScript build state, and tool runtime directories are ignored; keep the hosting manifest, migrations, and authored scripts in source control.
-
-`install:ci` runs `npm ci` once against the shared lockfile, disables parent-workspace discovery, and includes required dev/optional dependencies despite production/omit settings. Sharp defaults to prebuilt binaries unless explicitly configured otherwise. Do not overlap installers.
-
-- **Portable:** Preserve host HOME, npm cache, registry, proxy, temporary paths, retry/concurrency settings, and lifecycle-script policy. Use `--prefer-offline --no-audit --no-fund`.
-- **Managed Linux:** Use the existing project-local HOME/cache/tmp setup and Linux install lock, tarball preflight, and timeout. Restore the image-seeded npm cache only when its lockfile hash matches; retain network fallback. Builds keep their existing timeout. These helpers are not invoked by the portable profile.
-
-`scripts/sites-env.mjs` preserves the caller's HOME, npm cache, proxy, XDG, and temporary-directory configuration while defaulting Wrangler and Miniflare state to the checkout. If npm reports an unwritable cache, select a writable path with `npm_config_cache` for that install. The `dev` and `start` scripts also keep Wrangler logs inside the checkout. Generated `.sites-runtime/` and `.wrangler/` directories are disposable and ignored by Git.
-
-On portable, `npm run dev` uses `vinext dev` with HMR, starting at port 5173. Vinext records the running server in ignored `.vinext/` state, rejects an ordinary duplicate launch, and recovers stale state after a stopped process; exactly simultaneous starts can race. Pass `--port <port>` or `--hostname <host>` after `npm run dev --` when needed; keep portable previews on loopback.
-
-For managed Linux browser QA, follow the Sites skill's managed preview reference. The daemon runs the project's Vite dev script with `--host 0.0.0.0 --port 4173 --strictPort`; use the CLI's returned URL. The ignored local profile survives the daemon's cleared environment.
-
-The portable profile simulates ChatGPT sign-in only for loopback development requests. Visit `/signin-with-chatgpt?return_to=/` to sign in as `local_seedy` (`seedy@sites.test`, display name `Seedy`) and `/signout-with-chatgpt?return_to=/` to sign out. The development cookie preserves that identity across server restarts. Mock auth is disabled in the managed-linux profile and is not included in production builds; hosted authentication remains dispatch-owned.
-
-The Worker uses `vinext/server/fetch-handler`, including Vinext's config-aware image handling. After building, `npm start` runs that Worker locally through Wrangler on `127.0.0.1`, sharing `.wrangler/state` with dev preview and local D1 migrations; it does not deploy the site or simulate sign-in. Use the URL printed by the server. Pass `npm start -- --port <port>` to select a different built-preview port.
-
-Local previews use Miniflare's placeholder `Request.cf` metadata without a network lookup. Set `CLOUDFLARE_CF_FETCH_ENABLED=true` to opt into fetching preview metadata; this setting does not change hosted request metadata.
-
-Local tool usage metrics are disabled by default. Set `WRANGLER_SEND_METRICS=true` to opt in.
-
-## Included Shape
-
-- edit site code under `app/`
-- `app/chatgpt-auth.ts` provides optional dispatch-owned ChatGPT sign-in helpers
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `worker/index.ts` is the production Worker entrypoint and preserves request-scoped connector bindings
-- `scripts/vite/` contains the maintained Vite integrations and the vendored Sites plugin license
-- `scripts/connector-preview/` contains the local connector preview Worker and session helpers
-- the remaining `scripts/` files select execution profiles and run installation, development, and builds; the plugin's helpers orchestrate the Sites lifecycle
-- `dist/` contains generated deployment output; `.vinext/`, `.wrangler/`, and `.sites-runtime/` contain ignored local tool state
-- `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
-- `db/schema.ts` starts intentionally empty
-- `@cloudflare/workers-types` provides Worker types; `cloudflare-env.d.ts` declares optional `DB`/`BUCKET` bindings—update these declarations if binding names change
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
-
-The user ID is stable for the same user on the same Site and different across Sites. Use it as the durable user key; use email and name for display or contact purposes.
-
-SIWC-authenticated workspace sites may also receive `oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty `name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by `oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```text
+src/
+  App.vue                 Layout principal
+  main.ts                 Vue e configuração do Vue Router
+  store.ts                Estado compartilhado e cliente da API
+  types.ts                Tipos das obras e perfis
+  style.css               Identidade visual e responsividade
+  components/             Capas, cards, títulos e estados da interface
+  views/                  Início, catálogo, livro, autores, estante, publicação e leitor
+server/
+  index.ts                Worker HTTP e login simulado apenas no desenvolvimento
+  api.ts                  API, autorização, uploads e persistência
+  identity.ts             Leitura da identidade fornecida pela hospedagem
+  env.ts                  Tipos dos recursos do servidor
+  data.ts                 Obras e perfis de demonstração
+db/schema.ts              Esquema do banco
+drizzle/                  Migrações SQL versionadas
+public/                   Onça, arara, capas, exemplos e worker do PDF.js
+scripts/                  Preparação do banco e testes
+.vscode/                  Extensão recomendada e tarefas do VS Code
+wrangler.jsonc            Configuração do servidor e recursos Cloudflare
+vite.config.ts            Vue e integração do servidor com Vite
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+## Rotas
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs optional or required ChatGPT sign-in:
+| Rota | Função |
+| --- | --- |
+| `/` | Início e seleções editoriais |
+| `/explorar` | Busca, sugestões, filtros e ordenação |
+| `/livro/:id` | Detalhes, sinopse, download e recomendações |
+| `/ler/:id` | Leitor de PDF ou EPUB |
+| `/autores` | Diretório de autores |
+| `/autores/:id` | Perfil e publicações |
+| `/publicar` | Envio por etapas, rascunho e revisão |
+| `/estante` | Livros salvos, progresso, perfil e publicações |
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use the returned `userId` as the stable user key for user-owned records; do not use email as a durable identifier.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send anonymous visitors through Sign in with ChatGPT.
-- In a Server Component, start sign-in with `<a href={chatGPTSignInPath(returnTo)} target="_top">`. The auth helper module is server-only; do not import it into a Client Component.
-- Do not use `fetch`, XHR, a client-side router, or a framework link that can prefetch the sign-in route. SIWC must start as a top-level navigation.
-- Never request the AuthAPI authorization endpoint directly. The dispatch-owned `/signin-with-chatgpt` route must start the SIWC flow.
-- Use `chatGPTSignOutPath(returnTo)` for browser sign-out links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because they depend on per-request identity headers.
+## Dados e arquivos
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the OAuth cookies, and identity header injection. Do not implement app routes for those reserved paths. Routes that do not import and call the helper remain anonymous-compatible.
+- **D1** armazena livros, perfis, rascunhos, estantes e progresso.
+- **R2** armazena os arquivos enviados e as capas.
+- No desenvolvimento, os dados ficam em `.wrangler/state`. Essa pasta é ignorada pelo Git e não deve ser apagada se você quiser manter os uploads locais.
+- Produção e desenvolvimento usam bancos e arquivos separados. A migração para Vue preserva o esquema e os dados anteriores.
+- `npm run db:local` prepara um banco vazio ou reconhece o esquema existente sem recriar tabelas.
+- PDF e EPUB: até **25 MB**. Capas JPG, PNG e WebP: até **5 MB**. O servidor verifica tipo, autoria e disponibilidade da obra.
+- O leitor PDF usa **PDF.js**. O leitor EPUB extrai texto com **JSZip**, permite ajustes de fonte/tema e não executa scripts das obras. EPUBs com DRM ou diagramação fixa não são suportados.
+- As seis obras iniciais são exemplos originais, com autores fictícios, identificados na interface.
 
-SIWC establishes identity only; it does not prove workspace membership. Use the Sites hosting platform's access policy controls for workspace-wide restrictions, or enforce explicit server-side membership or allowlist checks.
+## Login
 
-Use SIWC for account pages, user-specific dashboards, saved records, and write actions tied to the current ChatGPT user. Leave public content anonymous.
+O catálogo pode ser explorado sem login. Publicar, salvar livros e sincronizar leituras exige autenticação.
 
-## Local D1 migrations
+Em `npm run dev`, **Entrar** usa uma identidade local de teste somente em localhost. Essa simulação é removida da compilação de produção.
 
-For a D1-backed local preview, generate SQL with `npm run db:generate`. Build once through the Sites skill's build entrypoint (or `npm run build` for standalone use) to generate `dist/server/wrangler.json`, rebuilding if bindings change. From the project root, apply each pending migration in order:
+Na hospedagem atual, o login é fornecido pelo ChatGPT e o servidor usa os cabeçalhos de identidade autenticada da plataforma. Para hospedar em outro provedor, conecte um provedor de autenticação confiável e adapte `server/identity.ts`; não aceite cabeçalhos de identidade vindos diretamente do público.
 
-```sh
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_example.sql
+## Comandos
+
+| Comando | Função |
+| --- | --- |
+| `npm run dev` | Servidor Vue com atualização automática |
+| `npm run typecheck` | Verifica TypeScript e templates Vue |
+| `npm run build` | Verifica tipos e compila cliente e servidor |
+| `npm run preview` | Executa a compilação local em `http://127.0.0.1:4173` |
+| `npm run db:local` | Prepara/preserva o banco local |
+| `npm run db:generate` | Gera migrações após alteração do esquema |
+| `npm run test:books` | Valida os PDFs e EPUBs de demonstração |
+| `npm run test:api` | Testa upload, publicação, estante e permissões no servidor local |
+
+Os testes de API usam somente localhost e retiram do catálogo a publicação de teste ao terminar.
+
+## Commit e envio ao GitHub
+
+O projeto já tem um repositório Git. A pasta `.vscode` pode ser versionada; `node_modules`, builds, dados locais e arquivos de configuração com segredos são ignorados.
+
+No VS Code, abra **Controle do Código-Fonte** (`Ctrl+Shift+G`) para revisar as alterações e criar commits. Para enviar a um novo repositório, use **Publicar Branch** e escolha sua conta do GitHub.
+
+Se você já criou um repositório vazio no GitHub, configure o endereço dele:
+
+```bash
+git remote add origin https://github.com/SEU_USUARIO/SEU_REPOSITORIO.git
+git push -u origin main
 ```
 
-Replace the filename with the pending migration and `DB` with your D1 binding name if different. Use `.wrangler/state`, not `.wrangler/state/v3`; Wrangler adds the versioned directories. Do not replay migrations already applied locally. This updates only the preview database; publishing applies production migrations separately.
+Se `origin` já estiver configurado, confira `git remote -v` antes de alterá-lo. O envio dos arquivos para o GitHub versiona o código; ele não transfere o banco e os uploads nem executa o servidor no GitHub Pages.
 
-## Diagnostic Commands
+## Publicação
 
-- `npm run install:ci`: perform the one locked dependency install
-- `npm run dev`: start the Vite/Vinext development server
-- `npm run build`: build the deployable Sites artifact
-- `npm run start`: preview the built Worker locally with D1/R2 support
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+A configuração `.openai/hosting.json` mantém a identidade da hospedagem atual e os recursos D1/R2. A compilação gera `dist/client` e `dist/server/index.js`.
 
-When using the Sites plugin, follow its skill instructions for installation, builds, and publishing. These npm commands remain available for standalone use.
-
-The portable build runs Vinext directly without a host `timeout` command. The managed-linux build uses `scripts/build-verified.sh` and its existing `SITES_BUILD_TIMEOUT` setting.
-
-## Learn More
-
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+Para outro ambiente Cloudflare, crie os recursos D1/R2 na sua conta, substitua os identificadores de exemplo em `wrangler.jsonc`, aplique as migrações e configure a autenticação. Não coloque tokens nem arquivos `.env` no repositório.

@@ -1,2 +1,0 @@
-export type Book={id:string;owner:string;title:string;subtitle:string;author:string;authorId:string;synopsis:string;genre:string;keywords:string;language:string;year:number;pages:number;format:'PDF'|'EPUB';size:number;file:string;cover:string;crop:number;online:boolean;download:boolean;atmosphere:string;themes:string;quote:string;excerpt:string;region:string;color:string;status:string;created:number;reads:number;downloads:number;rights?:boolean};
-export type Profile={id:string;name:string;bio:string;region:string;link:string;photo:string};

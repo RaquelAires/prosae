@@ -1,0 +1,19 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Prosaê: iniciar Vue",
+      "type": "npm",
+      "script": "dev",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Prosaê: verificar e compilar",
+      "type": "npm",
+      "script": "build",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}
