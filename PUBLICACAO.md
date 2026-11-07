@@ -11,7 +11,7 @@ Publique frontend e backend juntos no **Cloudflare Workers**, usando os assets g
 1. Crie uma conta Cloudflare e autorize a implantação do projeto.
 2. Crie o banco D1 e o bucket R2 na conta.
 3. Substitua em `wrangler.jsonc` o `database_id` de exemplo `00000000-0000-4000-8000-000000000000` pelo ID real do D1; atualize `database_name` e `bucket_name` para os recursos criados.
-4. **Antes de expor o projeto à internet, substitua o login herdado da plataforma de origem.** Atualmente `server/identity.ts` confia nos cabeçalhos `oai-authenticated-*`, que não constituem autenticação segura em uma implantação pública sem um proxy confiável que remova cabeçalhos fornecidos pelo cliente e injete identidade validada. Use um provedor de identidade com sessões verificadas no servidor, e adapte as rotas de entrada/saída.
+4. O projeto inclui cadastro e login próprios por e-mail e senha. `server/identity.ts` consulta sessões verificadas no D1; cabeçalhos de identidade enviados pelo cliente não autenticam usuários. Use HTTPS para que os cookies de sessão tenham a proteção Secure. As senhas usam scrypt com salt exclusivo. Recuperação e verificação de e-mail ainda não estão configuradas.
 5. Aplique as migrações do diretório `drizzle` ao D1, conferindo o banco de destino.
 6. No projeto, execute `npm ci`, `npm run typecheck`, `npm run build` e, após configurar os recursos e autenticação, `npx wrangler deploy`.
 7. Verifique as rotas `/api/catalog`, `/api/authors`, `/api/me`, login, publicação, upload e leitura no endereço fornecido pela Cloudflare.
